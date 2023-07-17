@@ -6,7 +6,7 @@ namespace ToDoList.Repos;
 
 public interface INoteRepo
 {
-    List<Note> GetNotes();
+    ICollection<Note> GetNotes();
     Note GetNote(int id);
     bool NoteExist(int id);
     bool PostNote(Note note, int userId);

@@ -35,14 +35,14 @@ public class NoteController:Controller
         return Ok(notes);
     }
     
-    [HttpGet]
+    [HttpGet("{noteId}")]
     [ProducesResponseType(200, Type = typeof(Note))]
     [ProducesResponseType(400)]
-    public IActionResult GetNote(int id)
+    public IActionResult GetNote(int noteId)
     {
-        var note = _mapper.Map<NoteDto>(_noteRepo.GetNote(id));
+        var note = _mapper.Map<NoteDto>(_noteRepo.GetNote(noteId));
 
-        if (!_noteRepo.NoteExist(id))
+        if (!_noteRepo.NoteExist(noteId))
             return NotFound();
         
         if (!ModelState.IsValid)
@@ -50,7 +50,7 @@ public class NoteController:Controller
         return Ok(note);
     }
 
-    [HttpGet("{noteId/completed}")]
+    [HttpGet("{noteId}/completed")]
     public IActionResult GetCompletedNotes()
     {
         var note = _mapper.Map<NoteDto>(_dataContext.Notes.Where(x => x.IsCompleted).ToListAsync());

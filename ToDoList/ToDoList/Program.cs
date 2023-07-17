@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using ToDoList;
+using ToDoList.Repos;
 
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";  
 
@@ -19,6 +20,8 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddTransient<Seed>();
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+builder.Services.AddScoped<INoteRepo,NoteRepo>();
  
 //add CORS
 /*builder.Services.AddCors(options =>
@@ -74,7 +77,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 //Authorization
-app.Map("/login/{username}", (string username) =>
+/*app.Map("/login/{username}", (string username) =>
 {
     var claims = new List<Claim> {new Claim(ClaimTypes.Name, username)};
     var jwt = new JwtSecurityToken(
@@ -84,10 +87,10 @@ app.Map("/login/{username}", (string username) =>
         expires: DateTime.UtcNow.Add(TimeSpan.FromMinutes(2)),
         signingCredentials: new SigningCredentials(AuthOptions.GetSymmetricSecurityKey(),
             SecurityAlgorithms.HmacSha256));
-});
+});*/
 
 
-app.MapPost("/login", (User userdata, DataContext dataContext) =>
+/*app.MapPost("/login", (User userdata, DataContext dataContext) =>
 {
     User? user = dataContext.Users.FirstOrDefault(x => x.Email == userdata.Email && x.Password == userdata.Password);
     if (user is null) return Results.NotFound();
@@ -109,11 +112,10 @@ app.MapPost("/login", (User userdata, DataContext dataContext) =>
         username = user.Email
     };
     return Results.Json(responce);
-});
+});*/
 
-app.Map("/note", [Authorize](HttpContext httpContext) => $"Hello!");
+/*app.Map("/note", [Authorize](HttpContext httpContext) => $"Hello!");*/
 
-app.UseRouting();
 
 app.UseCors(MyAllowSpecificOrigins);
 

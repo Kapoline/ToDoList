@@ -13,7 +13,7 @@ public class NoteRepo:INoteRepo
         _dataContext = dataContext;
     }
 
-    public List<Note> GetNotes()
+    public ICollection<Note> GetNotes()
     {
         return _dataContext.Notes.OrderBy(x => x.noteId).ToList();
     }
