@@ -7,6 +7,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using ToDoList;
+using ToDoList.Repos;
+
+var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";  
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,10 +19,25 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddTransient<Seed>();
+
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
+builder.Services.AddScoped<INoteRepo,NoteRepo>();
+builder.Services.AddScoped<IUserRepo, UserRepo>();
+ 
+//add CORS
+builder.Services.AddCors(options =>
+    options.AddPolicy(name: MyAllowSpecificOrigins, policy =>
+    {
+        policy.WithOrigins("http://localhost:5124", "http://localhost:3000");
+    }));
+
 builder.Services.AddDbContext<DataContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Connection")));
-builder.Services.AddAuthorization();
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+
+/*builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
@@ -32,9 +50,24 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             IssuerSigningKey = AuthOptions.GetSymmetricSecurityKey(),
             ValidateIssuerSigningKey = true
         };
-    });
+    }); */
+builder.Services.AddAuthentication();
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
+
+if (args.Length == 1 && args[0].ToLower() == "seeddata")
+    SeedData(app);
+
+void SeedData(IHost app)
+{
+    var scopedFactory = app.Services.GetService<IServiceScopeFactory>();
+    using (var scope = scopedFactory.CreateScope())
+    {
+        var service = scope.ServiceProvider.GetService<Seed>();
+        if (service != null) service.SeedContext();
+    }
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -43,28 +76,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-
-app.MapGet("/note", async (DataContext db) =>
-    await db.Notes.ToListAsync());
-
-app.MapGet("/note/{noteId}", async (int id, DataContext db) =>
-    await db.Notes.FindAsync(id) 
-        is Note note 
-        ? Results.Ok(note) 
-        : Results.NotFound());
-
-app.MapGet("/note/complete", async (DataContext db) =>
-    await db.Notes.Where(x => x.IsCompleted).ToListAsync());
-
-
-
 app.UseHttpsRedirection();
 
-app.UseAuthorization();
 app.UseAuthentication();
+app.UseAuthorization();
 
 //Authorization
-app.Map("/login/{username}", (string username) =>
+/*app.Map("/login/{username}", (string username) =>
 {
     var claims = new List<Claim> {new Claim(ClaimTypes.Name, username)};
     var jwt = new JwtSecurityToken(
@@ -74,22 +92,12 @@ app.Map("/login/{username}", (string username) =>
         expires: DateTime.UtcNow.Add(TimeSpan.FromMinutes(2)),
         signingCredentials: new SigningCredentials(AuthOptions.GetSymmetricSecurityKey(),
             SecurityAlgorithms.HmacSha256));
-});
+});*/
 
-app.Map("/data", [Authorize](HttpContext httpContext) => $"Hello!");
 
-var users = new List<User>()
+/*app.MapPost("/login", (User userdata, DataContext dataContext) =>
 {
-    new User
-    {
-        Email = "admin@main.com",
-        Password = "admin123"
-    }
-};
-
-app.MapPost("/login", (User userdata) =>
-{
-    User? user = users.FirstOrDefault(x => x.Email == userdata.Email && x.Password == userdata.Password);
+    User? user = dataContext.Users.FirstOrDefault(x => x.Email == userdata.Email && x.Password == userdata.Password);
     if (user is null) return Results.NotFound();
 
     var claims = new List<Claim> {new Claim(ClaimTypes.Name, user.Email)};
@@ -109,7 +117,12 @@ app.MapPost("/login", (User userdata) =>
         username = user.Email
     };
     return Results.Json(responce);
-});
+});*/
+
+/*app.Map("/note", [Authorize](HttpContext httpContext) => $"Hello!");*/
+
+
+app.UseCors(MyAllowSpecificOrigins);
 
 app.MapControllers();
 

@@ -13,27 +13,24 @@ public class Seed
 
     public void DataSeed()
     {
-        if (_dataContext.Users.Any())
+        if (_dataContext.NoteOwners.Any())
         {
-            var user = new List<User>()
+            var noteOwner = new List<NoteOwner>
             {
-                new User()
+                new NoteOwner()
                 {
-                    UserName = "polina",
-                    Email = "pol@gmail.com",
-                    Password = "pds12e",
-                    Note = new List<Note>()
+                    Note = new Note()
                     {
-                        new Note()
-                        {
-                            Content = "my first note",
-                            IsCompleted = false
-                        }
+                        Content = "my first note"
+                    },
+                    User = new User()
+                    {
+                        Email = "123@mail.com",
+                        Password = "123add",
                     }
                 }
-
             };
-            _dataContext.Users.AddRange(user);
+            _dataContext.NoteOwners.AddRange(noteOwner);
             _dataContext.SaveChanges();
         }
     }
