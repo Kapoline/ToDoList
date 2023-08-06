@@ -50,14 +50,17 @@ public class NoteController:Controller
         return Ok(note);
     }
 
-    [HttpGet("{noteId}/completed")]
-    public IActionResult GetCompletedNotes()
+    /*[HttpGet("/completed")]
+    [ProducesResponseType(200, Type = typeof(Note))]
+    [ProducesResponseType(400)]
+    public IActionResult GetCompletedNotes(bool completed)
     {
-        var note = _mapper.Map<NoteDto>(_dataContext.Notes.Where(x => x.IsCompleted).ToListAsync());
+        var note = _mapper.Map<NoteDto>(_noteRepo.NoteIsCompleted(completed));
+        
         if (!ModelState.IsValid)
             return BadRequest();
         return Ok(note);
-    }
+    }*/
     
     [HttpPost]
     public IActionResult PostNote([FromQuery] int userId, [FromBody] NoteDto noteDto)
@@ -67,9 +70,9 @@ public class NoteController:Controller
         
         var notes = _noteRepo.GetNoteTrimToUpper(noteDto);
 
-        if (noteDto != null)
+        if (notes != null)
         {
-            ModelState.AddModelError("", "User already exist");
+            ModelState.AddModelError("", "Note already exist");
             return StatusCode(422, ModelState);
         }
 

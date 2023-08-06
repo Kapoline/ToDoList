@@ -23,11 +23,17 @@ public class NoteRepo:INoteRepo
         return _dataContext.Notes.Where(x => x.noteId == id).FirstOrDefault();
     }
 
+    public List<Note> NoteIsCompleted(bool completed)
+    {
+        return _dataContext.Notes.Where(x => x.IsCompleted==completed).ToList();
+    }
+
     public bool NoteExist(int id)
     {
         return _dataContext.Notes.Any(x => x.noteId == id);
     }
 
+    
     public bool PostNote(Note note, int userId)
     {
         var noteOwnerEntity = _dataContext.Users.Where(x => x.userId == userId).FirstOrDefault();

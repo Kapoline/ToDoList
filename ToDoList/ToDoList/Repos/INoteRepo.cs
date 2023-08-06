@@ -11,4 +11,5 @@ public interface INoteRepo
     bool NoteExist(int id);
     bool PostNote(Note note, int userId);
     Note GetNoteTrimToUpper(NoteDto noteDto);
+    List<Note> NoteIsCompleted(bool completed);
 }
